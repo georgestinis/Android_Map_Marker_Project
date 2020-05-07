@@ -135,12 +135,10 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     @Override
-    public void onAccuracyChanged(Sensor sensor, int accuracy) {
-
-    }
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
     public int getRandom(int lowest, int highest) {
         Random random = new Random();
-        return random.nextInt((highest - lowest) + 1) + lowest;  //99
+        return random.nextInt((highest - lowest) + 1) + lowest;
     }
 }
