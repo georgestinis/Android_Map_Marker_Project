@@ -25,13 +25,19 @@ public class FormFragment extends Fragment {
     private EditText longitudeET, latitudeET, sensorET, description;
     private Spinner color;
     Button bn;
+
+    // Κατα την δημιουργια του fragment
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+        // Οριζω ενα view
         View view = inflater.inflate(R.layout.fragment_form, container, false);
+        // Παιρνω τα extra που σταλθηκαν απο το αλλο activity
         i = getActivity().getIntent();
         Bundle bundle = i.getExtras();
+        // Αναλογα με το String ΄key΄ βλεπω ποιος σενσορας επιλεχθηκε
         switch (bundle.getString("key")) {
+            // Παιρνω την τιμη και τον τυπο του σενσορα που σταλθηκε
             case "light":
                 sensor_val = bundle.getFloat("light");
                 sensorType = "Light Sensor";
@@ -45,18 +51,22 @@ public class FormFragment extends Fragment {
                 sensorType = "Temperature Sensor";
                 break;
         }
+        // Για το χρωμα του marker δημιουργω ενα spinner με τιμες απο το strings.xml τις οποιες παιρνει ενας adapter και επειτα θετω στο spinner τον adapter
         color = view.findViewById(R.id.color);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(), R.array.colors, R.layout.support_simple_spinner_dropdown_item);
         adapter.setDropDownViewResource(R.layout.support_simple_spinner_dropdown_item);
         color.setAdapter(adapter);
+        // Παιρνω απο το bundle το longitude, latitude
         longitude = bundle.getDouble("longitude");
         latitude = bundle.getDouble("latitude");
+        // Οριζω τις μεταβλητες με βαση τα καταλληλα id σε edittext, textview
         sensor = view.findViewById(R.id.sensortxt);
         longitudeET = view.findViewById(R.id.longitude);
         latitudeET= view.findViewById(R.id.latitude);
         sensorET = view.findViewById(R.id.sensor);
         color = view.findViewById(R.id.color);
         description = view.findViewById(R.id.description);
+        // Θετω τα καταλληλα αποτελεσματα σε καθε edittext και textview και σε οσα δεν επιτρεπεται να αλλαξω την τιμη τα κανω disable
         sensor.setText(sensorType);
         longitudeET.setText("" + longitude);
         longitudeET.setEnabled(false);
@@ -64,10 +74,13 @@ public class FormFragment extends Fragment {
         latitudeET.setEnabled(false);
         sensorET.setText("" + sensor_val);
         sensorET.setEnabled(false);
+        // Οριζω το κουμπι μου
         bn = view.findViewById(R.id.btn);
+        // Οταν πατηθει το κουμπι
         bn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                // Παιρνω το χρωμα και αναλογα ποιο επιλεχθηκε το μετατρεπω σε float για να μπορεσω να βαλω το χρωμα στην αλλη εφαρμογη
                 String color_code = color.getSelectedItem().toString();
                 float varColor;
                 switch (color_code){
@@ -105,7 +118,9 @@ public class FormFragment extends Fragment {
                         varColor = 0;
                         break;
                 }
+                // Παιρνω το description Που εχω γραψει
                 String varDescription = description.getText().toString();
+                // Προσπαθω να δημιουργησω ενα αντικειμενο που αντιστοιχει στην βαση μου για να περασω τις τιμες
                 try {
                     Markers marker = new Markers();
                     marker.setLatitude(latitude);
@@ -114,6 +129,8 @@ public class FormFragment extends Fragment {
                     marker.setSensor_value(sensor_val);
                     marker.setColor(varColor);
                     marker.setDescription(varDescription);
+                    // Επιλεγω το Markers collection της βασης μου και κανω add το αντικειμενο μου που εχει μεσα τιμες
+                    // Αν πετυχει η προσθηκη εμφανιζω ενα toast οτι εγινε αλλιως αν αποτυχει εμφανιζω αντιστοιχο toast
                     FormActivity.db.collection("Markers").add(marker).
                             addOnSuccessListener((task) -> {
                                 Toast.makeText(getContext(), "Marker added.", Toast.LENGTH_LONG).show();
@@ -121,16 +138,18 @@ public class FormFragment extends Fragment {
                             addOnFailureListener((task) -> {
                                 Toast.makeText(getContext(), "Add operation failed", Toast.LENGTH_LONG).show();
                             });
+                // Αν προκυψει καποιο exception το εμφανιζω
                 } catch (Exception e) {
                     Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_LONG).show();
                 }
+                // Δημιουργω εναν handler ωστε να προσθεσω μια καθυστερηση στην εκτελεση των εντολων παρακατω για να εμφανισθει το toast message
                 final Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        // Τερματιζω το activity αυτο για να γυρισω στο προηγουμενο
                         getActivity().finish();
-                        //Intent intent = new Intent(getActivity(), MapsActivity.class);
-                        //startActivity(intent);
+                        // Αδειαζω τα edittext
                         longitudeET.setText("");
                         latitudeET.setText("");
                         sensorET.setText("");
@@ -143,4 +162,5 @@ public class FormFragment extends Fragment {
         });
         return view;
     }
+
 }
