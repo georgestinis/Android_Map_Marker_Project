@@ -30,14 +30,18 @@ import com.google.firebase.firestore.QuerySnapshot;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    // Οριζω την βαση δεδομενων μου ως δημοσια
     public static FirebaseFirestore db;
 
+    // Κατα την δημιουργια του Activity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Οριζω το xml εγγραφο που θα ακολουθησει το activity οταν ανοιξει
         setContentView(R.layout.activity_maps);
+        // Αρχικοποιω την βαση ωστε να μπορω να χρησιμοποιησω τα δεδομενα
         db = FirebaseFirestore.getInstance();
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        // Παιρνω το fragment με id map και ξεκιναω να εμφανιζω τον χαρτη
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
@@ -45,29 +49,40 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        // Οριζουμε την μεταβλητη mMap με την παραμετρο που μας εχει η μεθοδος
         mMap = googleMap;
+        // Δημιουργω ενα collection reference για το Markers και παιρνω ολα τα δεδομενα του
         CollectionReference collectionReference = db.collection("Markers");
         collectionReference.get().addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
             @Override
             public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
+                // Αν υπαρχουν δεδομενα δημιουργω ενα loop για καθε δεδομενο
                 for (QueryDocumentSnapshot documentSnapshot : queryDocumentSnapshots){
+                    // Φτιαχνω αντικειμενο Marker απο το καθε QueryDocumentSnapshot
                     Markers marker = documentSnapshot.toObject(Markers.class);
+                    // Δημιουργω ενα markerOptions και latLng και θετω position με το latitude, longitude που μου επεστρεψε η βαση
                     MarkerOptions markerOptions = new MarkerOptions();
                     LatLng latLng = new LatLng(marker.getLatitude(), marker.getLongitude());
                     markerOptions.position(latLng);
+                    // Οριζω εναν τιτλο
                     markerOptions.title(latLng.latitude + " : " + latLng.longitude);
+                    // Θετω το χρωμα οπου παιρνει float τιμες
                     markerOptions.icon(BitmapDescriptorFactory
                             .defaultMarker(marker.getColor()));
+                    // Δημιουργω ενα info window με τις επιπλεον πληροφοριες
                     String info = marker.getSensor_type() + ": " + marker.getSensor_value() + "\n" +
                                    "Description: " + marker.getDescription();
                     markerOptions.snippet(info);
+                    // Θετω το marker με τα markerOptions
                     mMap.addMarker(markerOptions);
+                    // Θετω το info window
                     mMap.setInfoWindowAdapter(new GoogleMap.InfoWindowAdapter() {
                         @Override
                         public View getInfoWindow(Marker arg0) {
                             return null;
                         }
 
+                        // Παιρνω απο το marker τα δεδομενα που θελω και τα προσθετω στο window
                         @Override
                         public View getInfoContents(Marker marker) {
 
@@ -94,6 +109,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
+                // Σε περιπτωση αποτυχιας εμφανιζω μηνυμα
                 Toast.makeText(MapsActivity.this, "Failed to load markers.", Toast.LENGTH_LONG).show();
             }
         });

@@ -1,5 +1,6 @@
 package com.example.app2;
 
+// Κλαση που περιεχει τα πεδια που θα μπαινουν στην βαση
 public class Markers {
     private double latitude;
     private double longitude;
